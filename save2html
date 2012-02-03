@@ -1,0 +1,2 @@
+#!/bin/bash
+xvfb-run -a  ./save2html.py  $1 | grep время
