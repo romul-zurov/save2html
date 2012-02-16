@@ -6,7 +6,7 @@ import sys, urllib
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '0.9.1'
+VERSION = '0.9.2'
 EXIT_TIMEOUT = 30000
 
 class Downloader(QtCore.QObject):
