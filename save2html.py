@@ -6,7 +6,8 @@ import sys, urllib
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = 0.9
+VERSION = '0.9.1'
+EXIT_TIMEOUT = 30000
 
 class Downloader(QtCore.QObject):
 	def __init__(self, url, beg_str, end_str, url_enc, parent = None):
@@ -14,6 +15,7 @@ class Downloader(QtCore.QObject):
 		self.url = url
 		self.url_enc = url_enc
 		self.wv = QtWebKit.QWebView()
+		self.wv.settings().setFontSize(QtWebKit.QWebSettings.DefaultFontSize, 8)
 		self.wv.page().networkAccessManager().finished.connect(self.save)
 		self.count = 0
 		self.beg_str = beg_str
@@ -21,11 +23,15 @@ class Downloader(QtCore.QObject):
 		self.beg_qstr = QtCore.QString(beg_str.decode('utf8'))
 		self.end_qstr = QtCore.QString(end_str.decode('utf8'))
 		self.timer = QtCore.QTimer(self)
-		self.timer.start(30000)
+		self.timer.start(EXIT_TIMEOUT)
 		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.exit_timeout)
 	
+	def say(self, s):
+		print '<<<%s>>>' % s
+	
+	
 	def exit_timeout(self):
-		print "Error : no data found or bad url"
+		self.say("Error : no data found or bad url")
 		sys.exit()
 	
 	def save(self):
@@ -85,7 +91,7 @@ class Downloader(QtCore.QObject):
 #		res = ret_substr(str(data.toUtf8()).decode('utf8'), self.beg_str, self.end_str)
 		
 		if (res != None):
-			print res.toUtf8()
+			self.say(res.toUtf8())
 #			print res
 			sys.exit()
 		
@@ -118,8 +124,12 @@ if __name__ == '__main__':
 		end_str = arg[3]
 		if (la > 4):
 			url_enc = arg[4]
+		
+		#----
+#		print map_url, '\n', beg_str, '\n', end_str, '\n', url_enc; sys.exit()
+		
 	else: 
-		print 'Using: save2html url pattern_from pattern_to [encoding]'
+		print 'Using: \nxvfb-run -a -w 1 save2html.py url pattern_from pattern_to [encoding]'
 		sys.exit()
 	
 	app = QtGui.QApplication(arg)

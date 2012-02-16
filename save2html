@@ -1,2 +1,5 @@
 #!/bin/bash
-xvfb-run -a -w 1 /home/roman/save2html/save2html.py  $1 $2 $3 $4
+
+xvfb-run   -a -w 1 ./save2html.py       "http://ac-taxi.ru/order?service=1&point_from[obj][]=Невский просп.&point_from[house][]=100&point_from[corp][]=&point_from[coords][]=&point_to[obj][]=Витебский просп.&point_to[house][]=53&point_to[corp][]=3&point_to[coords][]=&note=&orderRecalc=Рассчитать"   "Время (с учетом пробок): "  "."  &
+xvfb-run   -a -w 1 ./save2html.py       "http://ac-taxi.ru/order?service=1&point_from[obj][]=Невский просп.&point_from[house][]=100&point_from[corp][]=&point_from[coords][]=&point_to[obj][]=Витебский просп.&point_to[house][]=53&point_to[corp][]=3&point_to[coords][]=&note=&orderRecalc=Рассчитать"   "<head>"  "</head>" &
+xvfb-run   -a -w 1 ./save2html.py       "http://ac-taxi.ru/order?service=1&point_from[obj][]=Невский просп.&point_from[house][]=100&point_from[corp][]=&point_from[coords][]=&point_to[obj][]=Витебский просп.&point_to[house][]=53&point_to[corp][]=3&point_to[coords][]=&note=&orderRecalc=Рассчитать"   "<title>"  "</title>"

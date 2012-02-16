@@ -1,0 +1,2 @@
+Using: 
+xvfb-run -a -w 1 save2html.py url pattern_from pattern_to [encoding]
