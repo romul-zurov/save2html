@@ -1,2 +1,2 @@
 #!/bin/bash
-xvfb-run -a  ./save2html.py  $1 | grep время
+xvfb-run -a -w 1 /home/roman/save2html/save2html.py  $1 $2 $3 $4

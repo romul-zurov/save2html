@@ -2,19 +2,31 @@
 # -*- coding: utf-8 -*-
 
 
-import sys
+import sys, urllib
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
+VERSION = 0.9
 
 class Downloader(QtCore.QObject):
-	def __init__(self, url, parent = None):
+	def __init__(self, url, beg_str, end_str, url_enc, parent = None):
 		super(Downloader, self).__init__(parent)
 		self.url = url
+		self.url_enc = url_enc
 		self.wv = QtWebKit.QWebView()
 		self.wv.page().networkAccessManager().finished.connect(self.save)
-		self.count = 0;
+		self.count = 0
+		self.beg_str = beg_str
+		self.end_str = end_str
+		self.beg_qstr = QtCore.QString(beg_str.decode('utf8'))
+		self.end_qstr = QtCore.QString(end_str.decode('utf8'))
+		self.timer = QtCore.QTimer(self)
+		self.timer.start(30000)
+		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.exit_timeout)
 	
+	def exit_timeout(self):
+		print "Error : no data found or bad url"
+		sys.exit()
 	
 	def save(self):
 		def to_f(name, data):
@@ -24,8 +36,23 @@ class Downloader(QtCore.QObject):
 			out.close()
 			pass
 		
+		
+		def ret_subQstr(data, str1, str2):
+			i1 = data.indexOf(str1)
+			if (i1 > -1):
+				i1 += str1.size()
+				i2 = data.indexOf(str2, i1)
+				if (i2 > i1):
+					return data.mid(i1, i2 - i1)
+					pass
+				else:
+					return None
+			else:
+				return None
+		
+		
 		def ret_time(data):
-			rex = QtCore.QRegExp(u'Среднее время в пути:.*$')
+			rex = QtCore.QRegExp(u'Время \(с учетом пробок\):.*$')
 			if (data.contains(rex)):
 				i = data.indexOf(rex)
 				data = data.mid(i)
@@ -36,11 +63,30 @@ class Downloader(QtCore.QObject):
 			else:
 				return None
 		
-#		data = self.wv.page().mainFrame().toHtml(); to_f('foo.html', data)
-		data = self.wv.page().mainFrame().toPlainText()
-		res = ret_time(data)
+		def ret_substr(stroka, str1, str2):
+			i1 = stroka.find(str1) 
+			if (i1 > -1):
+				i1 += len(str1)
+				i2 = stroka.find(str2, i1)
+				if (i2 > i1):
+					print stroka[i1:i2]
+					return stroka[i1:i2]
+				else:
+					return None
+			else:
+				return None
+		
+#		data = self.wv.page().mainFrame().toHtml(); # to_f('foo.html', data)
+#		data = self.wv.page().mainFrame().toPlainText(); # res = ret_time(data)
+		
+		data = self.wv.page().mainFrame().toHtml()
+		res = ret_subQstr(data, self.beg_qstr, self.end_qstr)
+		
+#		res = ret_substr(str(data.toUtf8()).decode('utf8'), self.beg_str, self.end_str)
+		
 		if (res != None):
 			print res.toUtf8()
+#			print res
 			sys.exit()
 		
 #		print "Page %d saved." % self.count
@@ -49,7 +95,11 @@ class Downloader(QtCore.QObject):
 	
 	
 	def load(self):
-		self.wv.load(QtCore.QUrl(self.url))
+#		get_url = urllib.quote(self.url.decode('utf8').encode('cp1251'), ':/')
+		get_url = self.url.decode('utf8').encode(self.url_enc)
+		qt_url = QtCore.QUrl()
+		qt_url.setEncodedUrl(QtCore.QByteArray(get_url))
+		self.wv.load(qt_url)
 		pass
 	
 	
@@ -60,15 +110,21 @@ class Downloader(QtCore.QObject):
 
 if __name__ == '__main__':
 	arg = sys.argv
-	if (len(arg) > 1):
+	url_enc = 'cp1251'
+	la = len(arg) 
+	if (la > 3):
 		map_url = arg[1]
+		beg_str = arg[2]
+		end_str = arg[3]
+		if (la > 4):
+			url_enc = arg[4]
 	else: 
-		print 'Error: No URL'
+		print 'Using: save2html url pattern_from pattern_to [encoding]'
 		sys.exit()
 	
 	app = QtGui.QApplication(arg)
 	
-	webpage = Downloader(map_url)
+	webpage = Downloader(map_url, beg_str, end_str, url_enc)
 	
 	webpage.load()
 	
