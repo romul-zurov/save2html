@@ -6,7 +6,7 @@ import sys, urllib
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '0.9.2'
+VERSION = '0.9.3'
 EXIT_TIMEOUT = 30000
 
 class Downloader(QtCore.QObject):
@@ -91,9 +91,16 @@ class Downloader(QtCore.QObject):
 #		res = ret_substr(str(data.toUtf8()).decode('utf8'), self.beg_str, self.end_str)
 		
 		if (res != None):
-			self.say(res.toUtf8())
-#			print res
-			sys.exit()
+			#-------
+#			self.say(res.toUtf8()); sys.exit()
+			
+			sout = str(res.toUtf8()).decode('utf8')
+			if (sout.isspace()):
+				pass
+			else:
+				self.say(sout)
+#				print res
+				sys.exit()
 		
 #		print "Page %d saved." % self.count
 		self.count += 1
@@ -138,7 +145,7 @@ if __name__ == '__main__':
 	
 	webpage.load()
 	
-#	webpage.show()
+	webpage.show()
 	
 	sys.exit(app.exec_())
 	pass
