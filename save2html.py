@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, urllib
+import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '0.9.3'
+VERSION = '20120222'
 EXIT_TIMEOUT = 30000
 
 class Downloader(QtCore.QObject):
@@ -15,8 +15,13 @@ class Downloader(QtCore.QObject):
 		self.url = url
 		self.url_enc = url_enc
 		self.wv = QtWebKit.QWebView()
-		self.wv.settings().setFontSize(QtWebKit.QWebSettings.DefaultFontSize, 8)
+#		self.wv.settings().setFontSize(QtWebKit.QWebSettings.DefaultFontSize, 8)
+		self.wv.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, False)
 		self.wv.page().networkAccessManager().finished.connect(self.save)
+		
+		self.tmp_timer = QtCore.QTimer(self)
+		self.wv.loadFinished.connect(self.do_submit)
+		
 		self.count = 0
 		self.beg_str = beg_str
 		self.end_str = end_str
@@ -26,8 +31,24 @@ class Downloader(QtCore.QObject):
 		self.timer.start(EXIT_TIMEOUT)
 		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.exit_timeout)
 	
+	
+	
+	def do_submit(self):
+		self.tmp_timer.start(1500)
+		self.connect(self.tmp_timer, QtCore.SIGNAL("timeout()"), self.press_submit)
+		pass
+	
+	
+	def press_submit(self):
+		dom = self.wv.page().mainFrame().documentElement()
+		button = dom.findFirst("input[type=submit]")
+		button.evaluateJavaScript("this.click()")
+		pass
+	
+	
 	def say(self, s):
-		print '<<<%s>>>' % s
+#		print '<<<%s>>>' % s
+		print '<<<%s>>>' % s.encode('cp1251')
 	
 	
 	def exit_timeout(self):
@@ -69,6 +90,17 @@ class Downloader(QtCore.QObject):
 			else:
 				return None
 		
+		def ret_coords(data):
+			dom = self.wv.page().mainFrame().documentElement()
+			inp = dom.findFirst('input[class=coords]')
+			val = inp.attribute("value")
+#			print val
+			if val.isEmpty():
+				return None
+			else:
+				return val
+		
+		
 		def ret_substr(stroka, str1, str2):
 			i1 = stroka.find(str1) 
 			if (i1 > -1):
@@ -84,22 +116,20 @@ class Downloader(QtCore.QObject):
 		
 #		data = self.wv.page().mainFrame().toHtml(); # to_f('foo.html', data)
 #		data = self.wv.page().mainFrame().toPlainText(); # res = ret_time(data)
+#		res = ret_substr(str(data.toUtf8()).decode('utf8'), self.beg_str, self.end_str)		
 		
 		data = self.wv.page().mainFrame().toHtml()
-		res = ret_subQstr(data, self.beg_qstr, self.end_qstr)
-		
-#		res = ret_substr(str(data.toUtf8()).decode('utf8'), self.beg_str, self.end_str)
+		if (self.beg_str == 'DayGPSKoordinatPoAdresu'):
+			res = ret_coords(data)
+		else:
+			res = ret_subQstr(data, self.beg_qstr, self.end_qstr)
 		
 		if (res != None):
-			#-------
-#			self.say(res.toUtf8()); sys.exit()
-			
 			sout = str(res.toUtf8()).decode('utf8')
 			if (sout.isspace()):
 				pass
 			else:
 				self.say(sout)
-#				print res
 				sys.exit()
 		
 #		print "Page %d saved." % self.count
@@ -137,15 +167,20 @@ if __name__ == '__main__':
 		
 	else: 
 		print 'Using: \nxvfb-run -a -w 1 save2html.py url pattern_from pattern_to [encoding]'
+		print 'version %s' % VERSION
 		sys.exit()
 	
 	app = QtGui.QApplication(arg)
+	
+	## ---
+#	map_url = r'http://ac-taxi.ru/order/?service=1&point_from[obj][]=Балтийская ул.&point_from[house][]=21&point_from[corp][]=1'
+#	sys.exit()
 	
 	webpage = Downloader(map_url, beg_str, end_str, url_enc)
 	
 	webpage.load()
 	
-	webpage.show()
+#	webpage.show()
 	
 	sys.exit(app.exec_())
 	pass
