@@ -141,14 +141,18 @@ class Downloader(QtCore.QObject):
 				self.say(sout)
 				sys.exit()
 		
-#		print "Page %d saved." % self.count
+		if DEBUG :
+#			print data
+			print self.beg_qstr, self.end_qstr, "Load #%d saved. res =[[ %s ]]" % (self.count, res)
 		self.count += 1
 		pass
 	
 	
 	def load(self):
-#		get_url = urllib.quote(self.url.decode('utf8').encode('cp1251'), ':/')
 		get_url = self.url.decode('utf8').encode(self.url_enc)
+		if DEBUG:
+#			get_url = urllib.quote_plus(self.url.decode('utf8').encode(self.url_enc), r'\:/"<>=[]&?')
+			print get_url
 		qt_url = QtCore.QUrl()
 		qt_url.setEncodedUrl(QtCore.QByteArray(get_url))
 		self.wv.load(qt_url)

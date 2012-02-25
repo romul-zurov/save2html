@@ -1,2 +1,6 @@
 Using: 
 xvfb-run -a -w 1 save2html.py url pattern_from pattern_to [encoding]
+
+
+<td colspan="2" id="recalcOutput" align="left">
+<td colspan=2 id="recalcOutput" align="left">
