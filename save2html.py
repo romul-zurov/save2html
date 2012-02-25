@@ -6,8 +6,10 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120222'
+VERSION = '20120225'
 EXIT_TIMEOUT = 30000
+DEBUG = False
+
 
 class Downloader(QtCore.QObject):
 	def __init__(self, url, beg_str, end_str, url_enc, parent = None):
@@ -16,11 +18,13 @@ class Downloader(QtCore.QObject):
 		self.url_enc = url_enc
 		self.wv = QtWebKit.QWebView()
 #		self.wv.settings().setFontSize(QtWebKit.QWebSettings.DefaultFontSize, 8)
-		self.wv.settings().setAttribute(QtWebKit.QWebSettings.AutoLoadImages, False)
 		self.wv.page().networkAccessManager().finished.connect(self.save)
 		
 		self.tmp_timer = QtCore.QTimer(self)
-		self.wv.loadFinished.connect(self.do_submit)
+		self.ADRES_TO_COORDS = False
+		if (beg_str == 'DayGPSKoordinatPoAdresu'):
+			self.ADRES_TO_COORDS = True
+			self.wv.loadFinished.connect(self.do_submit)
 		
 		self.count = 0
 		self.beg_str = beg_str
@@ -34,9 +38,11 @@ class Downloader(QtCore.QObject):
 	
 	
 	def do_submit(self):
-		self.tmp_timer.start(1500)
-		self.connect(self.tmp_timer, QtCore.SIGNAL("timeout()"), self.press_submit)
-		pass
+		if not self.ADRES_TO_COORDS: 
+			return None
+		else: 
+			self.tmp_timer.start(1500)
+			self.connect(self.tmp_timer, QtCore.SIGNAL("timeout()"), self.press_submit)
 	
 	
 	def press_submit(self):
@@ -47,8 +53,10 @@ class Downloader(QtCore.QObject):
 	
 	
 	def say(self, s):
-#		print '<<<%s>>>' % s
-		print '<<<%s>>>' % s.encode('cp1251')
+		if DEBUG:
+			print '<<<%s>>>' % s
+		else:
+			print '<<<%s>>>' % s.encode('cp1251')
 	
 	
 	def exit_timeout(self):
@@ -119,7 +127,8 @@ class Downloader(QtCore.QObject):
 #		res = ret_substr(str(data.toUtf8()).decode('utf8'), self.beg_str, self.end_str)		
 		
 		data = self.wv.page().mainFrame().toHtml()
-		if (self.beg_str == 'DayGPSKoordinatPoAdresu'):
+		
+		if self.ADRES_TO_COORDS:
 			res = ret_coords(data)
 		else:
 			res = ret_subQstr(data, self.beg_qstr, self.end_qstr)
@@ -152,6 +161,7 @@ class Downloader(QtCore.QObject):
 
 
 if __name__ == '__main__':
+	
 	arg = sys.argv
 	url_enc = 'cp1251'
 	la = len(arg) 
@@ -160,7 +170,10 @@ if __name__ == '__main__':
 		beg_str = arg[2]
 		end_str = arg[3]
 		if (la > 4):
-			url_enc = arg[4]
+			if (arg[4] == 'DEBUG'):
+				DEBUG = True
+			else:
+				url_enc = arg[4]
 		
 		#----
 #		print map_url, '\n', beg_str, '\n', end_str, '\n', url_enc; sys.exit()
@@ -170,6 +183,10 @@ if __name__ == '__main__':
 		print 'version %s' % VERSION
 		sys.exit()
 	
+	
+	if DEBUG:
+		print 'DEBUG mode running!'
+	
 	app = QtGui.QApplication(arg)
 	
 	## ---
@@ -177,10 +194,10 @@ if __name__ == '__main__':
 #	sys.exit()
 	
 	webpage = Downloader(map_url, beg_str, end_str, url_enc)
-	
 	webpage.load()
 	
-#	webpage.show()
+	if DEBUG:
+		webpage.show()
 	
 	sys.exit(app.exec_())
 	pass
