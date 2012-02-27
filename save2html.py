@@ -6,7 +6,7 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120225'
+VERSION = '20120227'
 EXIT_TIMEOUT = 30000
 DEBUG = False
 
@@ -41,7 +41,7 @@ class Downloader(QtCore.QObject):
 		if not self.ADRES_TO_COORDS: 
 			return None
 		else: 
-			self.tmp_timer.start(1500)
+			self.tmp_timer.start(1000)
 			self.connect(self.tmp_timer, QtCore.SIGNAL("timeout()"), self.press_submit)
 	
 	
@@ -101,8 +101,10 @@ class Downloader(QtCore.QObject):
 		def ret_coords(data):
 			dom = self.wv.page().mainFrame().documentElement()
 			inp = dom.findFirst('input[class=coords]')
-			val = inp.attribute("value")
-#			print val
+			val = inp.attribute('value')
+			if val.isEmpty():
+				inp = dom.findFirst('input[class=coords\ ui-autocomplete-input]')
+				val = inp.attribute('value')
 			if val.isEmpty():
 				return None
 			else:
@@ -142,7 +144,7 @@ class Downloader(QtCore.QObject):
 				sys.exit()
 		
 		if DEBUG :
-#			print data
+			print data
 			print self.beg_qstr, self.end_qstr, "Load #%d saved. res =[[ %s ]]" % (self.count, res)
 		self.count += 1
 		pass
