@@ -6,7 +6,7 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120227'
+VERSION = '20120310'
 EXIT_TIMEOUT = 30000
 DEBUG = False
 
@@ -178,12 +178,14 @@ if __name__ == '__main__':
 		if (la > 4):
 			if (arg[4] == 'DEBUG'):
 				DEBUG = True
+			elif (arg[4] == 'WAIT10'):
+				EXIT_TIMEOUT = 10000
 			else:
 				url_enc = arg[4]
-		
+		if 'WAIT10' in arg :
+			EXIT_TIMEOUT = 10000
 		#----
 #		print map_url, '\n', beg_str, '\n', end_str, '\n', url_enc; sys.exit()
-		
 	else: 
 		print 'Using: \nxvfb-run -a -w 1 save2html.py url pattern_from pattern_to [encoding]'
 		print 'version %s' % VERSION
