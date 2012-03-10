@@ -6,8 +6,8 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120310'
-EXIT_TIMEOUT = 30000
+VERSION = '20120310v2'
+EXIT_TIMEOUT = 10000
 DEBUG = False
 
 
@@ -178,7 +178,6 @@ if __name__ == '__main__':
 		if (la > 4):
 			if (arg[4] == 'DEBUG'):
 				DEBUG = True
-			elif (arg[4] == 'WAIT10'):
 				EXIT_TIMEOUT = 10000
 			else:
 				url_enc = arg[4]
