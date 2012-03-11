@@ -6,7 +6,7 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120311'
+VERSION = '20120311v2. Bug "Time on screen - non in out" fixed!'
 EXIT_TIMEOUT = 10000
 DEBUG = False
 
@@ -41,8 +41,13 @@ class Downloader(QtCore.QObject):
 		self.timer = QtCore.QTimer(self)
 		self.timer.start(EXIT_TIMEOUT)
 		self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.exit_timeout)
+		self.save_timer = QtCore.QTimer(self)
+		self.connect(self.save_timer, QtCore.SIGNAL("timeout()"), self.resave)
 	
 	
+	def resave(self):
+		print_debug('!resave %d time run.' % self.count)
+		self.save()
 	
 	def do_submit(self):
 		if not self.ADRES_TO_COORDS: 
@@ -151,6 +156,9 @@ class Downloader(QtCore.QObject):
 		
 		data = self.wv.page().mainFrame().toHtml()
 		
+		def start_save_timer():
+			self.save_timer.start(EXIT_TIMEOUT // 5)
+		
 		if self.ADRES_TO_COORDS:
 			res = ret_coords(data)
 		elif self.GET_WAY_TIME:
@@ -162,10 +170,12 @@ class Downloader(QtCore.QObject):
 		if (res != None):
 			sout = str(res.toUtf8()).decode('utf8')
 			if (sout.isspace()):
-				pass
+				start_save_timer()
 			else:
 				self.say(sout)
 				sys.exit()
+		else:
+			start_save_timer()
 		
 		if DEBUG and (not self.GET_WAY_TIME) :
 			print_debug(data)
@@ -224,7 +234,7 @@ if __name__ == '__main__':
 #	map_url = r'http://ac-taxi.ru/order/?i_generate_address=1&service=0&point_from[obj][]=&point_from[house][]=&point_from[corp][]=&point_from[coords][]=30.356885910342,59.9133987426758&point_to[obj][]=&point_to[house][]=&point_to[corp][]=&point_to[coords][]=30.375401,59.90293&'
 #	map_url = r'http://test.robocab.ru/order/?i_generate_address=1&service=0&point_from[obj][]=&point_from[house][]=&point_from[corp][]=&point_from[coords][]=30.353979,59.912411&point_to[obj][]=&point_to[house][]=&point_to[corp][]=&point_to[coords][]=30.375401,59.902930&'
 #	map_url = r'http://test.robocab.ru/order/?i_generate_address=1&service=1&point_from[obj][]=&point_from[house][]=&point_from[corp][]=&point_from[coords][]=30.339092,59.858280&point_to[obj][]=&point_to[house][]=&point_to[corp][]=&point_to[coords][]=30.484661,59.852063&note=&orderRecalc=Рассчитать'
-#	beg_str = 'DayVremyaPuti'
+#	beg_str = '___DayVremyaPuti'
 #	sys.exit()
 	
 	webpage = Downloader(map_url, beg_str, end_str, url_enc)
