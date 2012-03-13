@@ -6,14 +6,14 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120311v2. Bug "Time on screen - non in out" fixed!'
+VERSION = '20120314'
 EXIT_TIMEOUT = 10000
 DEBUG = False
 
 
-def print_debug(s):
+def print_debug(s, dec = 'utf8', enc = 'utf8'):
 	if DEBUG:
-		print str(s).decode('utf8').encode('utf8')
+		print str(s).decode(dec).encode(enc)
 
 
 class Downloader(QtCore.QObject):
@@ -188,7 +188,7 @@ class Downloader(QtCore.QObject):
 		get_url = self.url.decode('utf8').encode(self.url_enc)
 		if DEBUG:
 #			get_url = urllib.quote_plus(self.url.decode('utf8').encode(self.url_enc), r'\:/"<>=[]&?')
-			print_debug(get_url)
+			print_debug(get_url, self.url_enc)
 		qt_url = QtCore.QUrl()
 		qt_url.setEncodedUrl(QtCore.QByteArray(get_url))
 		self.wv.load(qt_url)
