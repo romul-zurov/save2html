@@ -6,7 +6,7 @@ import sys, urllib, time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120314'
+VERSION = '20120521'
 EXIT_TIMEOUT = 10000
 DEBUG = False
 
@@ -126,16 +126,12 @@ class Downloader(QtCore.QObject):
 		
 		def ret_coords(data):
 			dom = self.wv.page().mainFrame().documentElement()
-			inp = dom.findFirst('input[class=coords]')
-			val = inp.attribute('value')
-			if val.isEmpty():
-				inp = dom.findFirst('input[class=coords\ ui-autocomplete-input]')
-				val = inp.attribute('value')
+			inp = dom.findFirst('div[id=gps_coords]')
+			val = inp.toInnerXml()
 			if val.isEmpty():
 				return None
 			else:
 				return val
-		
 		
 		def ret_substr(stroka, str1, str2):
 			i1 = stroka.find(str1) 
