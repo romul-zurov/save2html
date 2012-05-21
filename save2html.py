@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, urllib, time
+#import urllib
+import sys
+import time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
