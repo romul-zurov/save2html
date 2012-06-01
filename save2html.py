@@ -8,7 +8,7 @@ import time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120521'
+VERSION = '20120601'
 EXIT_TIMEOUT = 10000
 DEBUG = False
 
@@ -30,11 +30,17 @@ class Downloader(QtCore.QObject):
 		self.tmp_timer = QtCore.QTimer(self)
 		self.ADRES_TO_COORDS = False
 		self.GET_WAY_TIME = False
+		self.COORDS_TO_ADRES = False
 		if (beg_str == 'DayGPSKoordinatPoAdresu'):
 			self.ADRES_TO_COORDS = True
 			self.wv.loadFinished.connect(self.do_submit)
-		if (beg_str == 'DayVremyaPuti'):
+		elif (beg_str == 'DayVremyaPuti'):
 			self.GET_WAY_TIME = True
+		elif (beg_str == 'DayAdresPoKoordinate'):
+			self.COORDS_TO_ADRES = True
+			self.wv.loadFinished.connect(self.do_submit)
+		else:
+			pass
 		self.count = 0
 		self.beg_str = beg_str
 		self.end_str = end_str
@@ -52,16 +58,16 @@ class Downloader(QtCore.QObject):
 		self.save()
 	
 	def do_submit(self):
-		if not self.ADRES_TO_COORDS: 
-			return None
-		else: 
+		if (self.ADRES_TO_COORDS) or (self.COORDS_TO_ADRES) : 
 			self.tmp_timer.start(1000)
 			self.connect(self.tmp_timer, QtCore.SIGNAL("timeout()"), self.press_submit)
+		else:
+			return None
 	
 	
 	def press_submit(self):
 		dom = self.wv.page().mainFrame().documentElement()
-		button = dom.findFirst("input[type=submit]")
+		button = dom.findFirst("input[name=orderRecalc]")
 		button.evaluateJavaScript("this.click()")
 		pass
 	
@@ -135,6 +141,24 @@ class Downloader(QtCore.QObject):
 			else:
 				return val
 		
+		def ret_adres(data):
+			dom = self.wv.page().mainFrame().documentElement()
+			inp = dom.findFirst('input[name=point_from\[obj\]\[\]]')
+			if inp.isNull(): 
+				print_debug('NOTFOUND! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ')
+			else:
+				print_debug('YEEES! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+				print_debug(inp.toInnerXml())
+				self.do_submit()
+			val = inp.attribute('value')
+			if val.isEmpty():
+				print_debug('FOUND! vakue empty :((( ')
+				return None
+			else:
+				print_debug('value NOT empty, but what??? ASDDF!')
+				return val
+			pass
+		
 		def ret_substr(stroka, str1, str2):
 			i1 = stroka.find(str1) 
 			if (i1 > -1):
@@ -162,6 +186,8 @@ class Downloader(QtCore.QObject):
 		elif self.GET_WAY_TIME:
 #			data = self.wv.page().mainFrame().toPlainText()
 			res = ret_time_DOM(data)
+		elif self.COORDS_TO_ADRES:
+			res = ret_adres(data)
 		else:
 			res = ret_subQstr(data, self.beg_qstr, self.end_qstr)
 		
