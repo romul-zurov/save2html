@@ -8,7 +8,7 @@ import time
 from PyQt4 import QtCore, QtWebKit
 from PyQt4 import QtGui
 
-VERSION = '20120601'
+VERSION = '20120604'
 EXIT_TIMEOUT = 10000
 DEBUG = False
 
@@ -143,21 +143,12 @@ class Downloader(QtCore.QObject):
 		
 		def ret_adres(data):
 			dom = self.wv.page().mainFrame().documentElement()
-			inp = dom.findFirst('input[name=point_from\[obj\]\[\]]')
-			if inp.isNull(): 
-				print_debug('NOTFOUND! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ')
-			else:
-				print_debug('YEEES! +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
-				print_debug(inp.toInnerXml())
-				self.do_submit()
-			val = inp.attribute('value')
+			inp = dom.findFirst('div[id=gps_addr]')
+			val = inp.toInnerXml()
 			if val.isEmpty():
-				print_debug('FOUND! vakue empty :((( ')
 				return None
 			else:
-				print_debug('value NOT empty, but what??? ASDDF!')
 				return val
-			pass
 		
 		def ret_substr(stroka, str1, str2):
 			i1 = stroka.find(str1) 
